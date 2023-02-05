@@ -11,7 +11,6 @@ local ESP = {
     Thickness = 2,
     AttachShift = 1,
     TeamMates = true,
-    Players = true,
     
     Objects = setmetatable({}, {__mode="kv"}),
     Overrides = {}
@@ -161,9 +160,7 @@ function boxBase:Update()
     if self.Player and not ESP.TeamMates and ESP:IsTeamMate(self.Player) then
         allow = false
     end
-    if self.Player and not ESP.Players then
-        allow = false
-    end
+
     if self.IsEnabled and (type(self.IsEnabled) == "string" and not ESP[self.IsEnabled] or type(self.IsEnabled) == "function" and not self:IsEnabled()) then
         allow = false
     end
@@ -333,41 +330,6 @@ function ESP:Add(obj, options)
     end
 
     return box
-end
-
-local function CharAdded(char)
-    local p = plrs:GetPlayerFromCharacter(char)
-    if not char:FindFirstChild("HumanoidRootPart") then
-        local ev
-        ev = char.ChildAdded:Connect(function(c)
-            if c.Name == "HumanoidRootPart" then
-                ev:Disconnect()
-                ESP:Add(char, {
-                    Name = p.Name,
-                    Player = p,
-                    PrimaryPart = c
-                })
-            end
-        end)
-    else
-        ESP:Add(char, {
-            Name = p.Name,
-            Player = p,
-            PrimaryPart = char.HumanoidRootPart
-        })
-    end
-end
-local function PlayerAdded(p)
-    p.CharacterAdded:Connect(CharAdded)
-    if p.Character then
-        coroutine.wrap(CharAdded)(p.Character)
-    end
-end
-plrs.PlayerAdded:Connect(PlayerAdded)
-for i,v in pairs(plrs:GetPlayers()) do
-    if v ~= plr then
-        PlayerAdded(v)
-    end
 end
 
 game:GetService("RunService").RenderStepped:Connect(function()
